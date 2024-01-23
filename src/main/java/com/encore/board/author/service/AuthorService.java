@@ -4,6 +4,7 @@ import com.encore.board.author.domain.Author;
 import com.encore.board.author.dto.AuthorDetailResDto;
 import com.encore.board.author.dto.AuthorListResDto;
 import com.encore.board.author.dto.AuthorSaveReqDto;
+import com.encore.board.author.dto.AuthorUpdateReqDto;
 import com.encore.board.author.repository.AuthorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,13 @@ public class AuthorService {
     }
 
     public void save(AuthorSaveReqDto authorSaveReqDto){
-        Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword());
+        Author.Role role = null;
+        if(authorSaveReqDto.getRole() == null || authorSaveReqDto.getRole().equals("user")){
+            role = Author.Role.USER;
+        }else{
+            role = Author.Role.ADMIN;
+        }
+        Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword(), role);
         authorRepository.save(author);
     }
 
@@ -37,7 +44,7 @@ public class AuthorService {
         }
         return authorListResDtos;
     }
-    public AuthorDetailResDto findById(Long id) throws EntityNotFoundException {
+    public AuthorDetailResDto findAuthorDetail(Long id) throws EntityNotFoundException {
         Author author = authorRepository.findById(id).orElseThrow(()->new EntityNotFoundException("검색하신 ID의 Member가 없습니다."));
         AuthorDetailResDto authorDetailResDto = new AuthorDetailResDto();
         authorDetailResDto.setId(author.getId());
@@ -45,7 +52,27 @@ public class AuthorService {
         authorDetailResDto.setName(author.getName());
         authorDetailResDto.setPassword(author.getPassword());
         authorDetailResDto.setCreatedTime(author.getCreatedTime());
+        if (author.getRole().equals(Author.Role.ADMIN)) {
+            authorDetailResDto.setRole("관리자");
+        }else{
+            authorDetailResDto.setRole("일반유저");
+        }
         return authorDetailResDto;
+    }
+
+    public Author findById(Long id) throws EntityNotFoundException {
+        Author author = authorRepository.findById(id).orElseThrow(()->new EntityNotFoundException("검색하신 ID의 Member가 없습니다."));
+        return author;
+    }
+
+    public void authorUpdate(Long id, AuthorUpdateReqDto authorUpdateReqDto){
+        Author author = this.findById(id);
+        author.updateAuthor(authorUpdateReqDto.getName(),authorUpdateReqDto.getPassword());
+        authorRepository.save(author);
+    }
+
+    public void authorDelete(Long id){
+        authorRepository.deleteById(id);
     }
 
 

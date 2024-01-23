@@ -41,10 +41,16 @@ public class Author {
         ADMIN, USER;
     }
 
-    public Author(String name, String email, String password){
+    public Author(String name, String email, String password, Role role){
         this.name = name;
         this.email = email;
         this.password = password;
+        this.role = role;
+    }
+
+    public void updateAuthor(String name, String password){
+        this.name=name;
+        this.password=password;
     }
 }
 
