@@ -28,7 +28,13 @@ public class AuthorService {
         }else{
             role = Author.Role.USER;
         }
-        Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword(), role);
+//        일반 생성자 방식
+//        Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword(), role);
+//        빌더 패턴 방식
+        Author author = Author.builder().email(authorSaveReqDto.getEmail())
+                .name(authorSaveReqDto.getName())
+                .password(authorSaveReqDto.getPassword())
+                .build();
         authorRepository.save(author);
     }
 
@@ -46,13 +52,14 @@ public class AuthorService {
     }
     public AuthorDetailResDto findAuthorDetail(Long id) throws EntityNotFoundException {
         Author author = authorRepository.findById(id).orElseThrow(()->new EntityNotFoundException("검색하신 ID의 Member가 없습니다."));
+        String role = null;
         AuthorDetailResDto authorDetailResDto = new AuthorDetailResDto();
         authorDetailResDto.setId(author.getId());
         authorDetailResDto.setEmail(author.getEmail());
         authorDetailResDto.setName(author.getName());
         authorDetailResDto.setPassword(author.getPassword());
         authorDetailResDto.setCreatedTime(author.getCreatedTime());
-        if (author.getRole().equals(Author.Role.USER)){
+        if (author.getRole() == null || author.getRole().equals(Author.Role.USER)){
             authorDetailResDto.setRole("일반유저");
         }else{
             authorDetailResDto.setRole("관리자");
