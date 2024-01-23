@@ -23,10 +23,10 @@ public class AuthorService {
 
     public void save(AuthorSaveReqDto authorSaveReqDto){
         Author.Role role = null;
-        if(authorSaveReqDto.getRole() == null || authorSaveReqDto.getRole().equals("user")){
-            role = Author.Role.USER;
-        }else{
+        if(authorSaveReqDto.getRole().equals("admin")){
             role = Author.Role.ADMIN;
+        }else{
+            role = Author.Role.USER;
         }
         Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword(), role);
         authorRepository.save(author);
@@ -52,10 +52,10 @@ public class AuthorService {
         authorDetailResDto.setName(author.getName());
         authorDetailResDto.setPassword(author.getPassword());
         authorDetailResDto.setCreatedTime(author.getCreatedTime());
-        if (author.getRole().equals(Author.Role.ADMIN)) {
-            authorDetailResDto.setRole("관리자");
-        }else{
+        if (author.getRole().equals(Author.Role.USER)){
             authorDetailResDto.setRole("일반유저");
+        }else{
+            authorDetailResDto.setRole("관리자");
         }
         return authorDetailResDto;
     }
