@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class AuthorService {
 
     private final AuthorRepository authorRepository;
@@ -28,13 +30,27 @@ public class AuthorService {
         }else{
             role = Author.Role.USER;
         }
+
 //        일반 생성자 방식
 //        Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword(), role);
 //        빌더 패턴 방식
-        Author author = Author.builder().email(authorSaveReqDto.getEmail())
+        Author author = Author.builder()
+                .email(authorSaveReqDto.getEmail())
                 .name(authorSaveReqDto.getName())
                 .password(authorSaveReqDto.getPassword())
+                .role(role)
                 .build();
+
+//        cascade.persist 테스트
+//        부모테리블을 통해 자식 테이블에 객체 동시에 생성
+//        List<Post> posts = new ArrayList<>();
+//        Post post = Post.builder()
+//                .title("등 장" + author.getName())
+//                .contents("반갑습니다. cascade test is ...")
+//                .author(author)
+//                .build();
+//        posts.add(post);
+//        author.setPosts(posts);
         authorRepository.save(author);
     }
 
@@ -64,6 +80,7 @@ public class AuthorService {
         }else{
             authorDetailResDto.setRole("관리자");
         }
+        authorDetailResDto.setPostCounts(author.getPosts().size());
         return authorDetailResDto;
     }
 
@@ -75,7 +92,8 @@ public class AuthorService {
     public void authorUpdate(Long id, AuthorUpdateReqDto authorUpdateReqDto){
         Author author = this.findById(id);
         author.updateAuthor(authorUpdateReqDto.getName(),authorUpdateReqDto.getPassword());
-        authorRepository.save(author);
+//        명시적으로 save를 하지 않더라도, jpa의 영속성 컨텍스트를 통해, 객체에 변경이 감지되면(dirtychecking)되면, 트랜잭션이 완료되는 시점에 save 동작
+//        authorRepository.save(author);
     }
 
     public void authorDelete(Long id){

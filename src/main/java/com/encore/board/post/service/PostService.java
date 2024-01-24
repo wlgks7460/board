@@ -1,12 +1,13 @@
 package com.encore.board.post.service;
 
+import com.encore.board.author.domain.Author;
+import com.encore.board.author.repository.AuthorRepository;
 import com.encore.board.post.domain.Post;
 import com.encore.board.post.dto.PostDetailResDto;
 import com.encore.board.post.dto.PostListResDto;
 import com.encore.board.post.dto.PostSaveReqDto;
 import com.encore.board.post.dto.PostUpDateReqDto;
 import com.encore.board.post.repository.PostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -16,25 +17,34 @@ import java.util.List;
 @Service
 public class PostService {
     private final PostRepository postRepository;
-    @Autowired
-    public PostService(PostRepository postRepository){
+    private final AuthorRepository authorRepository;
+
+    public PostService(PostRepository postRepository, AuthorRepository authorRepository) {
         this.postRepository = postRepository;
+        this.authorRepository = authorRepository;
     }
 
     public List<PostListResDto> posts(){
-        List<Post> posts = postRepository.findAll();
+        List<Post> posts = postRepository.findAllByOrderByCreatedTimeDesc();
         List<PostListResDto> postListResDtos = new ArrayList<>();
         for(Post post : posts){
             PostListResDto postListResDto = new PostListResDto();
             postListResDto.setId(post.getId());
             postListResDto.setTitle(post.getTitle());
+            postListResDto.setAuthor_email(post.getAuthor() == null? "익명유저" : post.getAuthor().getEmail());
             postListResDtos.add(postListResDto);
         }
         return postListResDtos;
     }
 
     public void save(PostSaveReqDto postSaveReqDto){
-        Post post = new Post(postSaveReqDto.getTitle(), postSaveReqDto.getContents());
+//        Post post = new Post(postSaveReqDto.getTitle(), postSaveReqDto.getContents());
+        Author author = authorRepository.findByEmail(postSaveReqDto.getEmail()).orElse(null);
+        Post post = Post.builder()
+                .title(postSaveReqDto.getTitle())
+                .contents(postSaveReqDto.getContents())
+                .author(author)
+                .build();
         postRepository.save(post);
     }
 

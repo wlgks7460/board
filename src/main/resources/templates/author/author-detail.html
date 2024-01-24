@@ -38,7 +38,11 @@
                 <td th:text="${author.role}"></td>
             </tr>
             <tr>
-                <td>가입시간 </td>
+                <td>작성글 수 </td>
+                <td th:text="${author.postCounts}"></td>
+            </tr>
+            <tr>
+                <td>가입시간</td>
                 <td th:text="${author.createdTime}"></td>
             </tr>
         </table>
