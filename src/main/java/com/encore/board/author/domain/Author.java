@@ -38,6 +38,7 @@ public class Author {
 
 //    author를 조회할 때 객체가 필요할시에 선언
 //    mappedBy에 연관관계의 주인을 명시하고, fk를 관리하는 변수명을 명시
+//    1:1관계일경우 @OneToOne도 존재
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL , fetch = FetchType.LAZY)
 //    @Setter // cascade.persist를 위한 테스트
     private List<Post> posts;

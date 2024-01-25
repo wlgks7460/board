@@ -11,10 +11,12 @@ import com.encore.board.post.repository.PostRepository;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class PostService {
     private final PostRepository postRepository;
     private final AuthorRepository authorRepository;
@@ -25,7 +27,7 @@ public class PostService {
     }
 
     public List<PostListResDto> posts(){
-        List<Post> posts = postRepository.findAllByOrderByCreatedTimeDesc();
+        List<Post> posts = postRepository.findAllFetchJoin();
         List<PostListResDto> postListResDtos = new ArrayList<>();
         for(Post post : posts){
             PostListResDto postListResDto = new PostListResDto();
@@ -45,6 +47,8 @@ public class PostService {
                 .contents(postSaveReqDto.getContents())
                 .author(author)
                 .build();
+//        더티체킹 테스트
+        author.updateAuthor("dirty checking test", "1234");
         postRepository.save(post);
     }
 
