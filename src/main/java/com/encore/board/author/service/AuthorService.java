@@ -23,14 +23,14 @@ public class AuthorService {
         this.authorRepository = authorRepository;
     }
 
-    public void save(AuthorSaveReqDto authorSaveReqDto){
+    public void save(AuthorSaveReqDto authorSaveReqDto) throws IllegalArgumentException{
+        if(authorRepository.findByEmail(authorSaveReqDto.getEmail()).isPresent()) throw new IllegalArgumentException("중복이메일");
         Author.Role role = null;
         if(authorSaveReqDto.getRole().equals("admin")){
             role = Author.Role.ADMIN;
         }else{
             role = Author.Role.USER;
         }
-
 //        일반 생성자 방식
 //        Author author = new Author(authorSaveReqDto.getName(), authorSaveReqDto.getEmail(), authorSaveReqDto.getPassword(), role);
 //        빌더 패턴 방식

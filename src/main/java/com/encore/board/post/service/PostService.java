@@ -8,10 +8,14 @@ import com.encore.board.post.dto.PostListResDto;
 import com.encore.board.post.dto.PostSaveReqDto;
 import com.encore.board.post.dto.PostUpDateReqDto;
 import com.encore.board.post.repository.PostRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +30,7 @@ public class PostService {
         this.authorRepository = authorRepository;
     }
 
-    public List<PostListResDto> posts(){
+    public List<PostListResDto> findAll(Pageable pageable){
         List<Post> posts = postRepository.findAllFetchJoin();
         List<PostListResDto> postListResDtos = new ArrayList<>();
         for(Post post : posts){
@@ -39,16 +43,42 @@ public class PostService {
         return postListResDtos;
     }
 
-    public void save(PostSaveReqDto postSaveReqDto){
+    public Page<PostListResDto> findAllPaging(Pageable pageable){
+        Page<Post> posts = postRepository.findAll(pageable);
+        Page<PostListResDto> postListResDtos = posts.map(p-> new PostListResDto(p.getId(), p.getTitle(),p.getAuthor() == null? "익명유저" : p.getAuthor().getEmail()));
+        return postListResDtos;
+    }
+
+    public Page<PostListResDto> findbyAppointment(Pageable pageable){
+        Page<Post> posts = postRepository.findByAppointment(null, pageable);
+        Page<PostListResDto> postListResDtos = posts.map(p-> new PostListResDto(p.getId(), p.getTitle(),p.getAuthor() == null? "익명유저" : p.getAuthor().getEmail()));
+        return postListResDtos;
+    }
+
+
+    public void save(PostSaveReqDto postSaveReqDto) throws IllegalArgumentException{
 //        Post post = new Post(postSaveReqDto.getTitle(), postSaveReqDto.getContents());
         Author author = authorRepository.findByEmail(postSaveReqDto.getEmail()).orElse(null);
+        LocalDateTime localDateTime = null;
+        String appointment = null;
+        if(postSaveReqDto.getAppointment().equals("Y")&& !postSaveReqDto.getAppointmentTime().isEmpty()){
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            localDateTime = LocalDateTime.parse(postSaveReqDto.getAppointmentTime(), dateTimeFormatter);
+            LocalDateTime now = LocalDateTime.now();
+            if(localDateTime.isBefore(now)){
+                throw new IllegalArgumentException("시간정보 잘못 입력");
+            }
+            appointment = "Y";
+        }
         Post post = Post.builder()
                 .title(postSaveReqDto.getTitle())
                 .contents(postSaveReqDto.getContents())
                 .author(author)
+                .appointment(appointment)
+                .appointmentTime(localDateTime)
                 .build();
 //        더티체킹 테스트
-        author.updateAuthor("dirty checking test", "1234");
+//        author.updateAuthor("dirty checking test", "1234");
         postRepository.save(post);
     }
 

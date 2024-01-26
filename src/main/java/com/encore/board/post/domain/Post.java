@@ -1,6 +1,7 @@
 package com.encore.board.post.domain;
 
 import com.encore.board.author.domain.Author;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,16 +42,29 @@ public class Post {
     @Column(columnDefinition = "TIMESTAMP ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     LocalDateTime updatedTime;
 
-    @Builder
-    public Post(String title, String contents, Author author) {
-        this.title = title;
-        this.contents = contents;
-        this.author = author;
-//        author 객체의 posts를 초기화 시켜준 후
-//        this.author.getPosts().add(this);
-    }
+    private String appointment;
+    private LocalDateTime appointmentTime;
+
+//    @Builder
+//    public Post(String title, String contents, Author author, Appointment appointment) {
+//        //, LocalDateTime appointmentTime)
+//        this.title = title;
+//        this.contents = contents;
+//        this.author = author;
+////        this.appointment = appointment;
+////        this.appointmentTime = appointmentTime;
+////        author 객체의 posts를 초기화 시켜준 후
+////        this.author.getPosts().add(this);
+//    }
     public void updatePost(String title, String contents){
         this.title=title;
         this.contents=contents;
+    }
+    public void updateAppointment(String appointment){
+        this.appointment = appointment;
+    }
+
+    public enum Appointment{
+        YES, NO;
     }
 }
