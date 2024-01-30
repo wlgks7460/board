@@ -5,6 +5,7 @@ import com.encore.board.post.dto.PostListResDto;
 import com.encore.board.post.dto.PostSaveReqDto;
 import com.encore.board.post.dto.PostUpDateReqDto;
 import com.encore.board.post.service.PostService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import javax.servlet.http.HttpSession;
+
 @Controller
+@Slf4j
 public class PostController {
     private final PostService postService;
     @Autowired
@@ -44,12 +48,16 @@ public class PostController {
     }
 
     @PostMapping("post/create")
-    public String postSave(Model model, PostSaveReqDto postSaveReqDto){
+    public String postSave(Model model, PostSaveReqDto postSaveReqDto, HttpSession httpSession){
         try {
-            postService.save(postSaveReqDto);
+//            HttpServletRequest req를 매개변수에 주입한 뒤에
+//            HttpSession session = req.getSession();
+//            세션값을 꺼내어 getAttribute("email")
+            postService.save(postSaveReqDto, httpSession.getAttribute("email").toString());
             return "redirect:/post/list";
         }catch (IllegalArgumentException e){
             model.addAttribute("errorMessage",e.getMessage());
+            log.error(e.getMessage());
             return  "/post/post-create";
         }
     }

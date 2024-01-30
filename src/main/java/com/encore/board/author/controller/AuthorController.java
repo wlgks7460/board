@@ -5,7 +5,9 @@ import com.encore.board.author.dto.AuthorDetailResDto;
 import com.encore.board.author.dto.AuthorSaveReqDto;
 import com.encore.board.author.dto.AuthorUpdateReqDto;
 import com.encore.board.author.service.AuthorService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
+@Slf4j
 public class AuthorController {
     private final AuthorService authorService;
     @Autowired
@@ -21,6 +24,7 @@ public class AuthorController {
         this.authorService = authorService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("author/list")
     public String authorList(Model model){
         model.addAttribute("authorList", authorService.authors());
@@ -32,6 +36,11 @@ public class AuthorController {
         return "author/author-create";
     }
 
+    @GetMapping("author/login-page")
+    public String authorLogin(){
+        return "author/login-page";
+    }
+
     @PostMapping("author/create")
     public String authorSave(Model model, AuthorSaveReqDto authorSaveReqDto){
         try {
@@ -39,6 +48,7 @@ public class AuthorController {
             return "redirect:/author/list";
         }catch (IllegalArgumentException e){
             model.addAttribute("errorMessage",e.getMessage());
+            log.error(e.getMessage());
             return  "/author/author-create";
 
         }
@@ -75,4 +85,5 @@ public class AuthorController {
     public AuthorDetailResDto circleDto(@PathVariable Long id){
         return authorService.findAuthorDetail(id);
     }
+
 }
